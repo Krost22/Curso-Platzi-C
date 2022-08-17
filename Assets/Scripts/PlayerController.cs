@@ -9,8 +9,11 @@ public class PlayerController : MonoBehaviour
     //Variables del movimiento del personaje
     public float jumpForce = 6f;
     public float runningSpeed = 2f;
-    Rigidbody2D rigidBody;
     public float rayDistance = 0.2f; //metros de longitud del rayo(ray)
+
+    Vector3 startPosition; //detecta el frame donde inicia el personaje
+
+    Rigidbody2D rigidBody;
     Animator animator;
     SpriteRenderer spriteRenderer;
 
@@ -34,9 +37,17 @@ public class PlayerController : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        startPosition = this.transform.position;
+
         animator.SetBool(STATE_ALIVE, true);
         animator.SetBool(STATE_ON_THE_GROUND, true);
         animator.SetBool(STATE_QUIETO, false);
+    }
+
+    void ResetPosition() //En el curso lo llaman StartGame
+    {
+        this.transform.position = startPosition;
+        this.rigidBody.velocity = Vector2.zero;
     }
 
     // Update is called once per frame
@@ -51,37 +62,45 @@ public class PlayerController : MonoBehaviour
         animator.SetBool(STATE_QUIETO, IsQuieto());
 
 
-        Debug.DrawRay(this.transform.position, Vector2.down * rayDistance, Color.red); //me muestra en tiempo real donde está tocando el suelo
+        Debug.DrawRay(this.transform.position, Vector2.down * rayDistance, Color.red); //me muestra en tiempo real donde está tocando el suelo el raycast
     }
 
 
     void FixedUpdate()
     {
-        if (Input.GetAxis("Horizontal") > 0)
-        {
-            GetComponent<CapsuleCollider2D>().offset = new Vector2(0.03677839f, -0.04457986f);
-            spriteRenderer.flipX = false;
-        }
-        else if (Input.GetAxis("Horizontal") < 0)
-        {
-            GetComponent<CapsuleCollider2D>().offset = new Vector2(-0.03677839f, -0.04457986f);
-            spriteRenderer.flipX = true;
+        if (GameManager.sharedInstance.currentGameState == GameState.inGame)
+        { //Si está jugando dejalo rotar el personaje con flip
+            rigidBody.velocity = new Vector2(Input.GetAxis("Horizontal") * runningSpeed,
+            rigidBody.velocity.y);
 
-        }
+            if (Input.GetAxis("Horizontal") > 0)
+            {
+                GetComponent<CapsuleCollider2D>().offset = new Vector2(0.03677839f, -0.04457986f);
+                spriteRenderer.flipX = false;
+            }
+            else if (Input.GetAxis("Horizontal") < 0)
+            {
+                GetComponent<CapsuleCollider2D>().offset = new Vector2(-0.03677839f, -0.04457986f);
+                spriteRenderer.flipX = true;
 
-
-        rigidBody.velocity = new Vector2(Input.GetAxis("Horizontal") * runningSpeed,
-        rigidBody.velocity.y);
-
+            }else if (GameManager.sharedInstance.currentGameState == GameState.menu)
+            {
+                rigidBody.Sleep(); //inmoviliza al personaje
+                
+            }
+        } 
+              
     }
 
-    void Jump()
+    void Jump()//Controla la funcion de salto
     {
-        if (IsTouchingTheGround())
+        if (GameManager.sharedInstance.currentGameState == GameState.inGame) { 
+            if (IsTouchingTheGround())
         {
-            rigidBody.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse); //Controla la funcion de salto
+            rigidBody.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse); 
         }
     }
+}
 
     //Detecta si está tocando el suelo
     public bool IsTouchingTheGround()
@@ -104,8 +123,6 @@ public class PlayerController : MonoBehaviour
     }
 
     //Controla la animacion al personaje no recibir ordenes
-    
-
     public bool IsQuieto()
     {
         if (rigidBody.velocity.x == 0)
@@ -118,4 +135,10 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    public void PlayerDie() //Controla la muerte pero solo del jugador
+    {
+        this.animator.SetBool(STATE_ALIVE, false);
+        GameManager.sharedInstance.GameOver();
+        rigidBody.constraints = RigidbodyConstraints2D.FreezePositionX;
+    }
 }
