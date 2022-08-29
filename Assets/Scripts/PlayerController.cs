@@ -27,7 +27,7 @@ public class PlayerController : MonoBehaviour
     public LayerMask groundMask;
 
     //Carga el rigidbody antes de que inicie el juego
-    private void Awake()
+    void Awake()
     {
         spriteRenderer = GetComponent<SpriteRenderer>();
         rigidBody = GetComponent<Rigidbody2D>();
@@ -39,21 +39,22 @@ public class PlayerController : MonoBehaviour
     {
         startPosition = this.transform.position;
 
-        animator.SetBool(STATE_ALIVE, true);
+        animator.SetBool(STATE_ALIVE, true);  
         animator.SetBool(STATE_ON_THE_GROUND, true);
         animator.SetBool(STATE_QUIETO, false);
     }
 
-    void ResetPosition() //En el curso lo llaman StartGame
+    public void StartGame() 
     {
         this.transform.position = startPosition;
-        this.rigidBody.velocity = Vector2.zero;
+        this.rigidBody.Sleep();
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.W) || Input.GetMouseButtonDown(0))  //poder usar la tecla espacio o clic izq del mause como salto
+        
+        if (Input.GetKeyDown(KeyCode.W))  //poder usar la tecla W como salto
         {
             Jump();
         }
@@ -86,7 +87,6 @@ public class PlayerController : MonoBehaviour
             }else if (GameManager.sharedInstance.currentGameState == GameState.menu)
             {
                 rigidBody.Sleep(); //inmoviliza al personaje
-                
             }
         } 
               
@@ -138,7 +138,17 @@ public class PlayerController : MonoBehaviour
     public void PlayerDie() //Controla la muerte pero solo del jugador
     {
         this.animator.SetBool(STATE_ALIVE, false);
+        //if (GameManager.sharedInstance.currentGameState == GameState.gameOver)
+        
         GameManager.sharedInstance.GameOver();
         rigidBody.constraints = RigidbodyConstraints2D.FreezePositionX;
+    }
+
+    public void Trampa()
+    {
+        rigidBody.constraints = RigidbodyConstraints2D.None;
+        rigidBody.constraints = RigidbodyConstraints2D.FreezeRotation;
+
+        this.animator.SetBool(STATE_ALIVE, true);
     }
 }

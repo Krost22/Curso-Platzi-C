@@ -16,33 +16,47 @@ public class GameManager : MonoBehaviour
     public GameState currentGameState;
     public AudioSource audioPause;
     public static GameManager sharedInstance;
+    public PlayerController controller;
 
-    private void Awake()
+    void Awake()
     {
+        
+
         sharedInstance = this;
+        
         audioPause = GetComponent<AudioSource>();
     }
 
     // Start is called before the first frame update
     void Start()
     {
+
+        controller = GameObject.FindWithTag("Player").
+                                GetComponent<PlayerController>();
+
         SetGameState(GameState.menu);
-        Time.timeScale = 0f;
+        
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Return) && count == 2)
+        if (Input.GetKeyDown(KeyCode.Space) && count == 2) //Volver al juego 
         {
             SetGameState(GameState.inGame);
             Time.timeScale = 1f;
         }
-        else if (Input.GetKeyDown(KeyCode.Return) && count == 1)
+        else if (Input.GetKeyDown(KeyCode.Space) && count == 1) //Poner Pausa (ir al menu)
         {
             SetGameState(GameState.menu);
-            Time.timeScale = 0f;
             audioPause.Play();
+        }
+        else if (Input.GetKeyDown(KeyCode.Escape)) //reiniciar
+        {
+            controller.StartGame();
+            SetGameState(GameState.inGame);
+            
+
         }
     }
 
@@ -58,8 +72,6 @@ public class GameManager : MonoBehaviour
         
     }
 
-    
-
     public void GameOver()//Se ejecuta cuando la vida llega a 0
     {
         SetGameState(GameState.gameOver);
@@ -70,17 +82,23 @@ public class GameManager : MonoBehaviour
     {
         if (newGameState == GameState.menu)
         {
+            
             count = 2;
+            Time.timeScale = 0f;
+
             //TODO: programar logica del menu
 
-        }else if(newGameState == GameState.inGame){
+        }
+        else if(newGameState == GameState.inGame){
             count = 1;
 
-            //TODO: preparar la escena para jugar
+            controller.Trampa();
 
-        }else if (newGameState== GameState.gameOver) 
+        }
+        else if (newGameState== GameState.gameOver) 
         {
             count = 0;
+
             //TODO: preparar cuando se pierde el juego
         }
 
