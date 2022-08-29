@@ -5,6 +5,18 @@ using UnityEngine;
 public class LevelBlock : MonoBehaviour
 {
     public Transform startPoint, exitPoint;
+
+
+    public Transform levelStartPosition;
+
+    void Awake()
+    {
+        //if (sharedInstance == null)
+        //{
+        //    sharedInstance = this;
+        //}
+    }
+
     // Start is called before the first frame update
     void Start()
     {
@@ -16,4 +28,5 @@ public class LevelBlock : MonoBehaviour
     {
         
     }
+    
 }
