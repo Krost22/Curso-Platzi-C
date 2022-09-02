@@ -1,23 +1,25 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ExitZone : MonoBehaviour
-{
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
+public class ExitZone : MonoBehaviour {
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
+	// Use this for initialization
+	void Start () {
+		
+	}
+	
+	// Update is called once per frame
+	void Update () {
+		
+	}
 
-    private void OnTriggerEnter2D(Collider2D collision)
+    void OnTriggerEnter2D(Collider2D collision)
     {
-        Debug.Log("debemos destruir el bloque anterior");
+        if(collision.tag == "Player")
+        {
+			LevelManager.sharedInstance.AddLevelBlock();
+			LevelManager.sharedInstance.RemoveLevelBlock();
+        }
     }
 }

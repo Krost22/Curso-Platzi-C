@@ -15,15 +15,15 @@ public class GameManager : MonoBehaviour
 
     public GameState currentGameState;
     public AudioSource audioPause;
+    public AudioSource soundTrack;
     public static GameManager sharedInstance;
     public PlayerController controller;
 
     void Awake()
     {
-        
-
         sharedInstance = this;
-        
+
+        soundTrack = GetComponent<AudioSource>();
         audioPause = GetComponent<AudioSource>();
     }
 
@@ -35,7 +35,8 @@ public class GameManager : MonoBehaviour
                                 GetComponent<PlayerController>();
 
         SetGameState(GameState.menu);
-        
+
+
     }
 
     // Update is called once per frame
@@ -45,17 +46,22 @@ public class GameManager : MonoBehaviour
         {
             SetGameState(GameState.inGame);
             Time.timeScale = 1f;
+
         }
         else if (Input.GetKeyDown(KeyCode.Space) && count == 1) //Poner Pausa (ir al menu)
         {
             SetGameState(GameState.menu);
+
             audioPause.Play();
+
+            Time.timeScale = 0f;
         }
         else if (Input.GetKeyDown(KeyCode.Escape)) //reiniciar
         {
             controller.StartGame();
             SetGameState(GameState.inGame);
-            
+
+
 
         }
     }
@@ -63,7 +69,7 @@ public class GameManager : MonoBehaviour
     public void StartGame()
     {
         SetGameState(GameState.inGame);
-        
+        Time.timeScale = 1f;
     }
 
     public void BackToMenu()//Se ejecuta cuando el usuario quiera volver al menu principal
@@ -84,7 +90,10 @@ public class GameManager : MonoBehaviour
         {
             
             count = 2;
-            Time.timeScale = 0f;
+           // Time.timeScale = 0f;
+
+            MenuManager.sharedInstance.ShowMainMenu();
+            MenuManager.sharedInstance.HideGameOver();
 
             //TODO: programar logica del menu
 
@@ -92,7 +101,13 @@ public class GameManager : MonoBehaviour
         else if(newGameState == GameState.inGame){
             count = 1;
 
+            LevelManager.sharedInstance.RemoveAllLevelBlocks();
+            LevelManager.sharedInstance.GenerateInitialBlocks();
+
             controller.Trampa();
+
+            MenuManager.sharedInstance.HideMainMenu();
+            MenuManager.sharedInstance.HideGameOver();
 
         }
         else if (newGameState== GameState.gameOver) 
@@ -100,6 +115,8 @@ public class GameManager : MonoBehaviour
             count = 0;
 
             //TODO: preparar cuando se pierde el juego
+            MenuManager.sharedInstance.ShowGameOver();
+
         }
 
         this.currentGameState = newGameState;
